@@ -1,0 +1,46 @@
+{
+  "name": "demo",
+  "productName": "项目名称",
+  "author": "作者",
+  "version": "1.0.4", //版本号
+  "main": "main.js", //主文件入口
+  "description": "项目描述",
+  "scripts": {
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "build": {
+    "electronVersion": "1.8.4",
+    "win": {
+      "requestedExecutionLevel": "highestAvailable",
+      "target": [{
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }]
+    },
+    "appId": "demo", //程序id
+    "artifactName": "demo-${version}-${arch}.${ext}",
+    "nsis": {
+      "artifactName": "demo-${version}-${arch}.${ext}"
+    },
+    "extraResources": [{
+      "from": "./static/xxxx/", //需要打包的静态资源
+      "to": "app-server", //静态资源存放路径
+      "filter": [
+        "**/*" //打包静态资源文件夹内的所有文件  如果没有静态资源要打包进去，extraResources 这段代码去掉
+      ]
+    }],
+    "publish": [{
+      "provider": "generic",
+      "url": "http://xxxxx/download/" //自动更新的安装包地址，初步使用publish这段代码不需要
+    }]
+  },
+  "dependencies": {
+    "core-js": "^2.4.1",
+    "electron-packager": "^12.1.0", //不打包成exe程序可以去掉
+    "electron-updater": "^2.22.1", //不打包成exe程序可以去掉
+  }
+}

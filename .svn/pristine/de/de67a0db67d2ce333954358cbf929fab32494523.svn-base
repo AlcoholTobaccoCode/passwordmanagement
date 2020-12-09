@@ -1,0 +1,28 @@
+# passwordmanagement 主文档
+
+[TOC]
+
+> want to integrate vue-cli and Electron
+
+## Build Setup
+
+``` bash
+# install dependencies
+npm install
+
+# serve with hot reload at localhost:8080
+npm run dev
+
+# build for production with minification
+npm run build
+
+# build for production and view the bundle analyzer report
+npm run build --report
+```
+
+For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+
+## electron 配置
+
+ electron 相关配置存放在 vue build 之后的 dist 文件夹中,
+ 其中 main.js 以及 package.json 为关键文件.

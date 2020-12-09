@@ -1,0 +1,7 @@
+# 开发记录
+
+## `2020129162009` 搭建基础框架
+
+ 1. 使用 `vue-cli@2.9.6` 作为页面开发基础;
+ 2. 在打包(`dist`)文件夹配置中 `electron` 基础启动 main.js、package.json;
+ 3. 修改打包时配置, 主要文件: `config-index.js-build-assetsPublicPath`

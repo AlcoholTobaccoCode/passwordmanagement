@@ -1,0 +1,23 @@
+{
+  "id": "2260485",
+  "name": "密码管理",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "11848575",
+      "name": "eye",
+      "font_class": "eye",
+      "unicode": "e610",
+      "unicode_decimal": 58896
+    },
+    {
+      "icon_id": "13477923",
+      "name": "eye",
+      "font_class": "eyedefuben",
+      "unicode": "e6c1",
+      "unicode_decimal": 59073
+    }
+  ]
+}

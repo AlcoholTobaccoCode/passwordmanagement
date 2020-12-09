@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>passwordmanagement</title>
+  <link href="./static/css/app.30790115300ab27614ce176899523b62.css" rel="stylesheet">
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="text/javascript" src="./static/js/manifest.3ad1d5771e9b13dbdad2.js"></script>
+  <script type="text/javascript" src="./static/js/vendor.97bc5fc0932358e58cd9.js"></script>
+  <script type="text/javascript" src="./static/js/app.c48869575609b032485a.js"></script>
+</body>
+
+</html>
