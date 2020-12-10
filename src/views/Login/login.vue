@@ -11,7 +11,7 @@
         {{ headerSupplement }}
       </div>
     </el-col>
-    <el-form :model="setData" status-icon :rules="rules" ref="setData">
+    <el-form :model="setData" :rules="rules" ref="setData">
       <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
         <div class="grid-content bg-purple form-item">
           <el-form-item prop="password">
@@ -24,9 +24,11 @@
       </el-col>
       <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
         <div class="grid-content bg-purple form-item">
+          <!-- ↓ 无校验 -->
           <el-form-item v-if="eyeShow" key="hasProp" >
-            <el-input type="password" v-model="setData.checkpassword" :disabled="eyeShow" placeholder="确认管理密码" autocomplete="off"></el-input>
+            <el-input type="password" :disabled="eyeShow" placeholder="确认管理密码" autocomplete="off"></el-input>
           </el-form-item>
+          <!-- ↓ 校验版本 -->
           <el-form-item v-else prop="checkpassword">
             <el-input type="password" v-model="setData.checkpassword" :disabled="eyeShow" placeholder="确认管理密码" autocomplete="off"></el-input>
           </el-form-item>
@@ -59,6 +61,8 @@
 </template>
 
 <script>
+import AES from '@/utils/AES/index'
+
 export default {
   name: 'login',
   data() {
@@ -71,6 +75,7 @@ export default {
       } else {
         if (this.setData.password !== '') {
           this.$refs.setData.validateField('checkpassword');
+        // this.$refs
         }
         callback();
       }
@@ -97,24 +102,29 @@ export default {
       rules: {
         password: [{
           validator: validatePass,
-          trigger: 'blur'
+          trigger: 'blur',
+          icon: ''
         }],
         checkpassword: [{
           validator: validatePassCheck,
-          trigger: 'blur'
+          trigger: 'blur',
+          icon: ''
         }]
       }
     }
   },
   props: {},
   components: {},
-  mounted() {},
+  mounted() {
+    // var a = AES.encrypt('wantEncryptString', 'hAw6eqnFLKxpsDv3');
+  },
   methods: {
     submitForm(formName) { //* 表单提交
       this.$refs[formName].validate((valid) => {
         if (valid) {
           //? TODO
-          console.info(this.setData);
+          const encryptPsw = AES.encrypt(this.setData.password);
+          console.info(encryptPsw);
         } else {
           console.warn('error submit!!');
           return false;
@@ -130,10 +140,9 @@ export default {
       this.eyeShow = !this.eyeShow; //* 眼睛 icon 切换
       if (this.eyeShow) {
         this.inputType = 'text';
-        // this.$refs.examine.clearValidate('barCvalidatePassCheckode');
+        this.setData.checkpassword = '';
       } else {
         this.inputType = 'password';
-        // this.$refs.examine.addValidate('barCvalidatePassCheckode');
       }
 
     }
@@ -158,7 +167,7 @@ export default {
 .header {
   font-size: .26rem;
   font-weight: 700;
-  margin-top: 1rem;
+  margin-top: .5rem;
 }
 
 .header-supplement {

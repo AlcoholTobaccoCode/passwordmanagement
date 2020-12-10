@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import Login from './login/index'
+import LoginPaged from '@/views/Login/login.vue'
 Vue.use(VueRouter)
 
 const routes = [{
@@ -9,16 +10,18 @@ const routes = [{
     redirect: '/login'
   }, {
     path: '/',
-    component:()=> {
-      import ('@/views/Login/login.vue')
-    }
+    name: 'login',
+    meta: {
+      title: '设置管理密码'
+    },
+    component: LoginPaged
   },
   Login
 ];
 
 const router = new VueRouter({
   routes,
-  mode: 'history',
+  // mode: 'history',
   // linkActiveClass: 'active'
 });
 
