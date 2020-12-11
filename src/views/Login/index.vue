@@ -1,7 +1,7 @@
 <template>
 <div class="login">
   <el-row>
-    <el-form :model="setData" ref="setData">
+    <el-form :model="setData" ref="setData" @submit.native.prevent>
       <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
         <div class="grid-content bg-purple form-item">
           <el-form-item prop="password">
@@ -14,19 +14,50 @@
     </el-form>
     <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
       <div class="grid-content bg-purple form-item form-link-el">
-        <el-tooltip class="tooltip-item" effect="light" :content="pswTips" placement="right">
+        <el-link type="warning" v-if="showForgot" @click="forgotPswFun">忘记密码</el-link>
+        <el-tooltip class="tooltip-item" effect="light" :content="pswRemind" placement="right">
           <el-link type="primary">提示</el-link>
         </el-tooltip>
-        <el-link type="warning" v-if="showForgot" @click="forgotPswFun">忘记密码</el-link>
       </div>
     </el-col>
   </el-row>
   <el-link type="warning" class="formatData" @click="formatData">格式化</el-link>
+
+  <el-dialog title="找回密码" :visible.sync="dialogFindPswFormVisible" @close="closeFindPswForm" :close-on-click-modal="false">
+    <el-form :model="findPsw" v-loading="loading">
+      <el-form-item label="密钥">
+        <el-input v-model="findPsw.findPswKey" autocomplete="off"></el-input>
+      </el-form-item>
+    </el-form>
+    <el-row :gutter="10" v-if="response">
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+        <div class="grid-content bg-purple-light">
+          <el-tag type="success">您要找的密码可能为:</el-tag>
+          <el-link type="success" :underline="false">{{findPsw.findedPsw}}</el-link>
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+        <div class="grid-content bg-purple-light">
+          <el-tag type="info">新的密钥已更新, 请保存:</el-tag>
+          <input type="text" hidden :value="secretKey" ref="secretKey">
+          <el-link type="info" @click="copySecretKey">{{secretKey}}</el-link>
+          <el-link type="info" @click="saveSecretKey">导出密钥</el-link>
+        </div>
+      </el-col>
+    </el-row>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="dialogFindPswFormVisible = false" v-if="footerBtn">取 消</el-button>
+      <el-button type="primary" @click="findPswRrquest" v-if="footerBtn">确 定</el-button>
+      <el-button @click="closeFindPswForm" v-if="!footerBtn">关 闭</el-button>
+    </div>
+  </el-dialog>
+
 </div>
 </template>
 
 <script>
 import AES from '@/utils/AES/index'
+import $base from '@/assets/scripts/base.js'
 
 //* 管理员密码
 const adminPsw = JSON.parse(localStorage.getItem('adminPsw'));
@@ -36,12 +67,21 @@ export default {
   data() {
     return {
       inputType: 'password', //* 输入框类型
-      pswTips: '提示文字',
+      pswRemind: '', //* 提示
       setData: {
         password: '', //* 密码
         pswErrorNums: 0 //* 密码错误次数
       },
-      showForgot: false
+      footerBtn: true, //* 底部按钮切换
+      showForgot: false, //* 显示'忘记密码'
+      dialogFindPswFormVisible: false, //* 忘记密码 dialog
+      response: false, //* 显示密码与密钥框
+      secretKey: '', //* 密钥
+      loading: false, //* 加载动画(确定按钮上)
+      findPsw: {
+        findPswKey: '', //* 密钥
+        findedPsw: ''
+      }
     }
   },
   beforeCreate() {
@@ -50,6 +90,9 @@ export default {
         name: 'root'
       });
     } */
+    if (adminPsw) {
+      this.pswRemind = decodeURI(adminPsw.pswRemind); //* 密码提示
+    }
   },
   created() { //* 绑定回车事件(@keydown.enter.native 在 el-x 元素上会失效)
     const _self = this;
@@ -59,7 +102,6 @@ export default {
         _self.enter();
       }
     }
-
   },
   methods: {
     enter() { //* 表单提交
@@ -67,12 +109,26 @@ export default {
         return;
       }
       let psw = '';
-      if (adminPsw.psw) {
-        psw = adminPsw.psw;
+      if (adminPsw) {
+        if (adminPsw.psw) {
+          psw = adminPsw.psw;
+        } else {
+          $this.$message.error('未检测到密码, 跳转注册页面');
+          setTimeout(() => {
+            $this.$router.push({
+              name: 'register'
+            });
+          }, 1000);
+          return;
+        }
       } else {
-        next({
-          path: '/register'
-        })
+        this.$message.error('未检测到密码, 跳转注册页面');
+        setTimeout(() => {
+          this.$router.push({
+            name: 'register'
+          });
+        }, 1000);
+        return;
       }
       const savePsw = AES.decrypt(psw);
       if (this.setData.password == savePsw) {
@@ -104,10 +160,51 @@ export default {
       }
     },
     forgotPswFun() { //* 忘记密码
-      console.info('forgotPswFun')
+      this.dialogFindPswFormVisible = true;
+      // console.info('forgotPswFun')
     },
     formatData() { //* 格式化数据库
       console.info('formatData');
+    },
+    findPswRrquest() { //* 找回密码 '确定' 按钮
+      this.loading = true;
+      // const findPswKey = localStorage.getItem('findPswKey');
+      // if (this.findPsw === findPswKey) { //* 密钥对的上
+      setTimeout(() => { //* 美好的结果都值得等待
+        this.loading = false;
+        this.response = true;
+        this.findPsw.findedPsw = AES.decrypt(adminPsw.psw); //* 显示密码
+        this.secretKey = 'miyao';
+        this.footerBtn = false;
+      }, 1000);
+      // }
+    },
+    closeFindPswForm() { //* 关闭找回密码 dialog
+      this.loading = false;
+      this.response = false;
+      this.findPsw.findedPsw = '';
+      this.footerBtn = true;
+      this.dialogFindPswFormVisible = false;
+      console.info('closeFindPswForm')
+    },
+    copySecretKey() { //* 密钥复制
+      this.$refs.secretKey.select();
+      document.execCommand('Copy');
+      this.$message({
+        type: 'success',
+        showClose: true,
+        message: '复制成功'
+      });
+    },
+    saveSecretKey() { //* 导出密钥
+      console.info(this.$moment().format('MMMM Do YYYY, h:mm:ss a'));
+      debugger
+      return;
+      const blob = {
+        content: ['密钥: <' + this.secretKey + '>; 保存时间: ' + 'shijian'],
+        type: 'text/plain;chartset=utf-8'
+      };
+      $base.saveFile(blob, 'PASSWORDMANAGEMENT');
     }
   },
   computed: {}
@@ -148,7 +245,10 @@ export default {
 }
 
 .tooltip-item {
-  margin-right: .2rem ;
+  margin: .2rem;
 }
 
+.el-row .el-col {
+  margin: .03rem 0;
+}
 </style>

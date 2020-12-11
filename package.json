@@ -13,7 +13,9 @@
   "dependencies": {
     "crypto-js": "^4.0.0",
     "element-ui": "^2.14.1",
+    "file-saver": "^2.0.5",
     "install": "^0.13.0",
+    "moment": "^2.29.1",
     "vue": "^2.5.2",
     "vue-router": "^3.4.9"
   },

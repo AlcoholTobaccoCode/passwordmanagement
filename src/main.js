@@ -1,20 +1,22 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import ElementUI from 'element-ui'
-import 'element-ui/lib/theme-chalk/index.css'
-import App from './App'
-import router from './router'
-import '@/assets/styles/base.css'
-import '@/assets/iconfont/iconfont.css'
-import db from '@/utils/indexedDB'
+import Vue from 'vue' //* 根
+import App from './App' //* 根页面
+import VueRouter from 'vue-router' //* 路由依赖
+import ElementUI from 'element-ui' //* 如名
+import 'element-ui/lib/theme-chalk/index.css' //* elementUI 样式
+import router from './router' //* 路由配置
+import '@/assets/styles/base.css' //* 基础公共样式
+import '@/assets/iconfont/iconfont.css' //* 自定义 iconfont 仓
+import db from '@/utils/indexedDB' //* indexedDB 依赖
+import Moment from 'moment' //* 日期格式化依赖
+
 
 Vue.config.productionTip = false
 
 Vue.prototype.db = db; //* 全局挂载 indexedDB
 
-Vue.use(VueRouter).use(ElementUI)
+Vue.use(VueRouter).use(ElementUI) //* 导入 elementUI
 
-const dbInfo = {
+const dbInfo = { //* indexedDB 配置
   dbName: 'passwordmanagement',
   dbVersion: 2,
   dbInstance: {
@@ -22,6 +24,8 @@ const dbInfo = {
     regObjectStore: 'registerPsw', //* 密码信息库
   }
 };
+
+Vue.prototype.$moment = Moment; //* 全局挂载 moment 时间处理方法
 
 /* eslint-disable no-new */
 new Vue({

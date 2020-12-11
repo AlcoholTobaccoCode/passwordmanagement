@@ -190,10 +190,11 @@ input[type="number"]+div>.count_subtract {
   list-style: none;
   cursor: default;
   text-align: center;
-  text-shadow: 0 0 5px rgba(0, 0, 0, .2)
+  text-shadow: 0 0 .005rem rgba(0, 0, 0, .2)
 }
 
-.el-col,
+.el-col, /* col */
+.el-dialog, /* dialog */
 .el-message { /* elementUI message 提醒框, 因为 html fontSize 会对其造成 影响 */
-  font-size: 14px;
+  font-size: .14rem;
 }
