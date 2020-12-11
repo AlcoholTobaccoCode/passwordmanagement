@@ -173,3 +173,27 @@ input[type="number"]+div>.count_subtract {
   /* background: url("../images/count_subtract.png") no-repeat; */
   background-size: contain;
 }
+
+/* 自定义演示标签, 适合字符串渲染 */
+.showTitleInTest {
+  display: block;
+  margin-block-start: 0.67em;
+  margin-block-end: 0.67em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
+  font-size: 1rem;
+  font-family: "Microsoft Yahei", sans-serif;
+  color: #ccc;
+  list-style: none;
+  cursor: default;
+  text-align: center;
+  text-shadow: 0 0 5px rgba(0, 0, 0, .2)
+}
+
+.el-col,
+.el-message { /* elementUI message 提醒框, 因为 html fontSize 会对其造成 影响 */
+  font-size: 14px;
+}

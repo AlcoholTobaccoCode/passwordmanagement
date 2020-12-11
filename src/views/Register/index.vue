@@ -1,5 +1,5 @@
 <template>
-<div class="login">
+<div class="register">
   <el-row>
     <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
       <div class="grid-content bg-purple tips header">
@@ -25,7 +25,7 @@
       <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
         <div class="grid-content bg-purple form-item">
           <!-- ↓ 无校验 -->
-          <el-form-item v-if="eyeShow" key="hasProp" >
+          <el-form-item v-if="eyeShow" key="hasProp">
             <el-input type="password" :disabled="eyeShow" placeholder="确认管理密码" autocomplete="off"></el-input>
           </el-form-item>
           <!-- ↓ 校验版本 -->
@@ -63,8 +63,10 @@
 <script>
 import AES from '@/utils/AES/index'
 
+const storeNames = 'registerPsw'
+
 export default {
-  name: 'login',
+  name: 'register',
   data() {
     var validatePass = (rule, value, callback) => { //* 密码校验
       if (value === '') {
@@ -75,7 +77,6 @@ export default {
       } else {
         if (this.setData.password !== '') {
           this.$refs.setData.validateField('checkpassword');
-        // this.$refs
         }
         callback();
       }
@@ -90,6 +91,7 @@ export default {
       }
     };
     return {
+      showPsw: '',
       header: '首次使用需要设置管理密码',
       headerSupplement: '用于验证进入及加密数据(忘记无法找回)',
       eyeShow: false, //* 密码可视小眼睛 //* 确认密码输入框是否可编辑(是否需要确认密码)
@@ -115,16 +117,29 @@ export default {
   },
   props: {},
   components: {},
-  mounted() {
-    // var a = AES.encrypt('wantEncryptString', 'hAw6eqnFLKxpsDv3');
-  },
+  mounted() {},
   methods: {
+    /* async addData() {
+      // 父组件维护maxid
+      debugger
+      await this.db[storeNames].add(this.setData).catch(err => {
+        console.log(err.message)
+      })
+      this.showPsw = this.setData.password
+    }, */
     submitForm(formName) { //* 表单提交
       this.$refs[formName].validate((valid) => {
         if (valid) {
           //? TODO
           const encryptPsw = AES.encrypt(this.setData.password);
-          console.info(encryptPsw);
+          localStorage.setItem('adminPsw', JSON.stringify({
+            psw: encryptPsw,
+            status: true
+          }));
+          this.$router.push({
+            name: 'root'
+          });
+
         } else {
           console.warn('error submit!!');
           return false;
@@ -152,7 +167,7 @@ export default {
 </script>
 
 <style scoped>
-.login {
+.register {
   background-color: rgba(51, 51, 51, 1);
   transition: all ease-in-out .3s;
   height: 100%;

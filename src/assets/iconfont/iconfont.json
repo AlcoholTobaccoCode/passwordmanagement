@@ -6,6 +6,34 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "7391579",
+      "name": "enter",
+      "font_class": "enter",
+      "unicode": "e676",
+      "unicode_decimal": 58998
+    },
+    {
+      "icon_id": "9722686",
+      "name": "enter",
+      "font_class": "enter1",
+      "unicode": "e716",
+      "unicode_decimal": 59158
+    },
+    {
+      "icon_id": "11064122",
+      "name": "enter",
+      "font_class": "enter2",
+      "unicode": "eae9",
+      "unicode_decimal": 60137
+    },
+    {
+      "icon_id": "13117285",
+      "name": "enter",
+      "font_class": "enter3",
+      "unicode": "e687",
+      "unicode_decimal": 59015
+    },
+    {
       "icon_id": "11848575",
       "name": "eye",
       "font_class": "eye",
