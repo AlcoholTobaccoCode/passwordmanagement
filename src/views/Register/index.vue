@@ -1,5 +1,5 @@
 <template>
-<div class="register">
+<div class="register" v-loading="loading" element-loading-text="页面跳转中">
   <el-row>
     <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
       <div class="grid-content bg-purple tips header">
@@ -15,10 +15,11 @@
       <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
         <div class="grid-content bg-purple form-item">
           <el-form-item prop="password">
-            <el-input :type="inputType" v-model="setData.password" placeholder="设置管理密码" autocomplete="off">
+            <el-input :type="inputType" v-model="setData.password" maxlength="20" show-word-limit placeholder="设置管理密码" autocomplete="off">
               <i class="iconfont icon-eyedefuben eyedefuben" style="font-size: 0.24rem;" v-show="!eyeShow" @click="eyeChange()" slot="suffix"></i>
               <i class="iconfont icon-eye eye" v-show="eyeShow" style="margin-right: 0.04rem;" @click="eyeChange()" slot="suffix"></i>
             </el-input>
+            <el-progress class="pswProcess" :percentage="passwordPercent" :format="passwordPercentFormat"></el-progress>
           </el-form-item>
         </div>
       </el-col>
@@ -60,14 +61,17 @@
 
   <el-dialog title="密码注册成功" :visible.sync="dialogSecretFormVisible" @close="dialogSecretFormCLose" width="80%" :destroy-on-close=true>
     <span>现在, 请保存您的密钥, 这是找回密码的唯一凭证.</span>
-    <input type="text" style="position:fixed; top: -180rem" :value="setData.secretKey" ref="secretKey">
-    <el-link type="info" @click="copySecretKey">{{setData.secretKey}}</el-link>
-    <el-link type="info" @click="saveSecretKey">导出密钥</el-link>
+    <input type="text" class="fileExportInput" :value="setData.secretKey" ref="secretKey">
+    <el-tooltip class="item" effect="dark" content="点击密钥复制" placement="top-start">
+      <el-link type="info" @click="copySecretKey">{{setData.secretKey}}</el-link>
+    </el-tooltip>
+    <div>
+      <el-link type="info" @click="saveSecretKey">导出密钥</el-link>
+    </div>
     <span slot="footer" class="dialog-footer">
       <el-button @click="dialogSecretFormVisible= false">关 闭</el-button>
     </span>
   </el-dialog>
-
   <el-progress :percentage="progress.percentage" v-if="progressVisible" :show-text="false" :stroke-width="3" class="progress" :color="progress.customColor"></el-progress>
 </div>
 </template>
@@ -81,18 +85,84 @@ const storeNames = 'registerPsw'
 export default {
   name: 'register',
   data() {
+    var _this = this;
     var validatePass = (rule, value, callback) => { //* 密码校验
       if (value === '') {
         callback(new Error('请设置密码'));
-      }
-      if (value.trim().length < 6) {
-        callback(new Error('请设置至少六位的密码'));
       } else {
-        if (this.setData.password !== '') {
-          this.$refs.setData.validateField('checkpassword');
+        //6-20位包含字符、数字和特殊字符
+        var ls = 0;
+        if (_this.setData.password !== '') {
+          if (_this.setData.password.match(/([a-z])+/)) {
+            console.info('is ++')
+            ls++;
+          }
+          if (_this.setData.password.match(/([0-9])+/)) {
+            console.info('is ++')
+            ls++;
+          }
+          if (_this.setData.password.match(/([A-Z])+/)) {
+            console.info('is ++')
+            ls++;
+          }
+          if (_this.setData.password.match(/([\W])+/) && !_this.setData.password.match(/(![\u4E00-\u9FA5])+/)) {
+            console.info('is ++')
+            ls++;
+          }
+          if (ls >= 4 && _this.setData.password.length > 15) {
+            console.info('is ++')
+            ls++;
+          }
+          if (_this.setData.password.length < 6 || _this.setData.password.length > 20) {
+            callback(new Error('要求6-20位字符'));
+            ls = 0;
+            console.info('is 20位字符 0')
+          }
+          if (_this.setData.password.match(/([\u4E00-\u9FA5])+/)) {
+            callback(new Error('不能包含中文字符'));
+            ls = 0;
+            console.info('is 不能包含中文字符 0')
+          }
+          console.log(`🚀 ~ file: index.vue ~ line 95 ~ validatePass ~ ls`, ls)
+
+          switch (ls) {
+            case 0:
+              _this.passwordPercent = 0;
+              // callback(new Error('数字、小写字母、大写字母以及特殊字符中四选三'));
+              break;
+            case 1:
+              _this.passwordPercent = 20;
+              // callback(new Error('数字、小写字母、大写字母以及特殊字符中四选三'));
+              break;
+            case 2:
+              _this.passwordPercent = 40;
+              // callback(new Error('数字、小写字母 、大写字母以及特殊字符中四选三'));
+              break;
+            case 3:
+              _this.passwordPercent = 60;
+            case 4:
+              _this.passwordPercent = 80;
+              break;
+            case 5:
+              _this.passwordPercent = 100;
+              break;
+            default:
+              _this.passwordPercent = 0;
+              break;
+          }
         }
-        callback();
       }
+
+      /* if (value.trim().length < 6) {
+        callback(new Error('请设置至少六位的密码'));
+      } */
+      /*  else {
+              if (this.setData.password !== '') {
+                this.$refs.setData.validateField('checkpassword');
+              }
+              callback();
+            } */
+
     };
     var validatePassCheck = (rule, value, callback) => { //* 确认密码校验
       if (value === '') {
@@ -110,21 +180,25 @@ export default {
       eyeShow: false, //* 密码可视小眼睛 //* 确认密码输入框是否可编辑(是否需要确认密码)
       dialogSecretFormVisible: false, //* 密钥 dialog
       inputType: 'password', //* 输入框类型
+      loading: false, //* 跳转页面时的 loading
       setData: {
         password: '', //* 密码
         checkpassword: '', //* 确认密码
         pswRemind: '', //* 密码提示
         secretKey: '', //* 密钥
       },
+      passwordPercent: 0, //* 密码强度比例
       rules: {
         password: [{
+          // required: true,
           validator: validatePass,
-          trigger: 'blur',
+          trigger: ['blur', 'change'],
           icon: ''
         }],
         checkpassword: [{
+          // required: true,
           validator: validatePassCheck,
-          trigger: 'blur',
+          trigger: ['blur', 'change'],
           icon: ''
         }]
       },
@@ -161,7 +235,7 @@ export default {
           this.setData.secretKey = $base.randomWord(false, 50); //* 密钥
           localStorage.setItem('adminPsw', JSON.stringify({ //* 存储
             psw: encryptPsw, //* 加密后的密码吗
-            status: true, //* 登录状态
+            status: false, //* 登录状态
             pswRemind: encodeURI(this.setData.pswRemind), //* 密码提醒
             secretKey: this.setData.secretKey //* 密钥
           }));
@@ -193,6 +267,7 @@ export default {
       let $this = this;
       let precessNums = 0;
       let timer = null;
+      this.loading = true;
       timer = setInterval(() => {
         $this.progressVisible = true; //* 模拟进度条
         let precess = parseFloat(Math.random() * 30 + 20);
@@ -205,8 +280,9 @@ export default {
         if (precessNums >= 100) {
           clearInterval(timer);
           timer = null;
+          this.loading = false;
           this.$router.push({
-            name: 'root'
+            name: 'login'
           });
           return
         }
@@ -215,7 +291,6 @@ export default {
     copySecretKey() { //* 密钥复制
       this.$refs.secretKey.select();
       setTimeout(() => {
-
         document.execCommand('Copy');
         this.$message({
           type: 'success',
@@ -226,12 +301,12 @@ export default {
     },
     saveSecretKey() { //* 导出密钥
       const blob = {
-        content: ['密钥: <' + this.secretKey + '>; 保存时间: ' + this.$moment().format('MMMM Do YYYY, h:mm:ss a')],
+        content: ['密钥: <' + this.setData.secretKey + '>; 保存时间: ' + this.$moment().format('MMMM Do YYYY, h:mm:ss a')],
         type: 'text/plain;chartset=utf-8'
       };
       $base.saveFile(blob, 'PASSWORDMANAGEMENT');
     },
-    customColorMethod(percentage) {
+    customColorMethod(percentage) { //* 顶部进度条
       if (percentage <= 20) {
         return this.progress.customColors[20];
       } else if (percentage <= 40 && percentage > 20) {
@@ -244,6 +319,28 @@ export default {
         return this.progress.customColors[100];
       }
     },
+    passwordPercentFormat(percentage) { //* 密码强度
+      console.log(`🚀 ~ file: index.vue ~ line 323 ~ passwordPercentFormat ~ percentage`, percentage)
+      /**
+       * 很弱
+       * 弱
+       * 强
+       * 很强
+       * 极强
+       */
+      if (Number(percentage) <= 20) {
+        return '很弱';
+      } else if (Number(percentage) > 20 && Number(percentage) <= 40) {
+        return '弱';
+      } else if (Number(percentage) > 40 && Number(percentage) <= 60) {
+        return '强';
+      } else if (Number(percentage) > 60 && Number(percentage) <= 80) {
+        return '很强';
+      } else {
+        return '极强';
+      }
+
+    }
   },
   computed: {}
 }
@@ -298,5 +395,9 @@ export default {
   right: 0;
   font-size: 14px;
   line-height: 0;
+}
+
+.pswProcess div {
+  color: #fff !important;
 }
 </style>

@@ -15,15 +15,15 @@
     <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
       <div class="grid-content bg-purple form-item form-link-el">
         <el-link type="warning" v-if="showForgot" @click="forgotPswFun">忘记密码</el-link>
-        <el-tooltip class="tooltip-item" effect="light" :content="pswRemind" placement="right">
+        <el-tooltip class="tooltip-item" effect="dark" :content="pswRemind" placement="right">
           <el-link type="primary">提示</el-link>
         </el-tooltip>
       </div>
     </el-col>
   </el-row>
-  <el-link type="warning" class="formatData" @click="formatData">格式化</el-link>
+  <el-link type="info" class="formatData" @click="formatData">格式化</el-link>
 
-  <el-dialog title="找回密码" :visible.sync="dialogFindPswFormVisible" @close="closeFindPswForm" :close-on-click-modal="false">
+  <el-dialog title="找回密码" width="80%" :visible.sync="dialogFindPswFormVisible" @close="closeFindPswForm" :close-on-click-modal="false">
     <el-form :model="findPsw" v-loading="loading">
       <el-form-item label="密钥">
         <el-input v-model="findPsw.findPswKey" autocomplete="off"></el-input>
@@ -39,9 +39,11 @@
       <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
         <div class="grid-content bg-purple-light">
           <el-tag type="info">新的密钥已更新, 请保存:</el-tag>
-          <input type="text" hidden :value="secretKey" ref="secretKey">
+          <input type="text" class="fileExportInput" :value="secretKey" ref="secretKey">
           <el-link type="info" @click="copySecretKey">{{secretKey}}</el-link>
-          <el-link type="info" @click="saveSecretKey">导出密钥</el-link>
+          <div>
+            <el-link type="info" @click="saveSecretKey">导出密钥</el-link>
+          </div>
         </div>
       </el-col>
     </el-row>
@@ -67,7 +69,7 @@ export default {
   data() {
     return {
       inputType: 'password', //* 输入框类型
-      pswRemind: '', //* 提示
+      pswRemind: '未设置提示', //* 提示
       setData: {
         password: '', //* 密码
         pswErrorNums: 0 //* 密码错误次数
@@ -90,9 +92,7 @@ export default {
         name: 'root'
       });
     } */
-    if (adminPsw) {
-      this.pswRemind = decodeURI(adminPsw.pswRemind); //* 密码提示
-    }
+
   },
   created() { //* 绑定回车事件(@keydown.enter.native 在 el-x 元素上会失效)
     const _self = this;
@@ -101,6 +101,9 @@ export default {
       if (key === 13) {
         _self.enter();
       }
+    }
+    if (adminPsw) {
+      this.pswRemind = decodeURI(adminPsw.pswRemind); //* 密码提示
     }
   },
   methods: {
@@ -133,7 +136,7 @@ export default {
       const savePsw = AES.decrypt(psw);
       if (this.setData.password == savePsw) {
         //* 改变登录状态
-        if (adminPsw.status) {
+        if (!adminPsw.status) {
           adminPsw.status = true;
         }
         localStorage.setItem('adminPsw', JSON.stringify(adminPsw))
@@ -160,6 +163,7 @@ export default {
       }
     },
     forgotPswFun() { //* 忘记密码
+      this.setData.password = '';
       this.dialogFindPswFormVisible = true;
       // console.info('forgotPswFun')
     },
@@ -167,23 +171,34 @@ export default {
       console.info('formatData');
     },
     findPswRrquest() { //* 找回密码 '确定' 按钮
+      if (this.findPsw.findPswKey.trim().length <= 0) {
+        this.$message('密钥不能为空哦');
+        return;
+      }
       this.loading = true;
       // const findPswKey = localStorage.getItem('findPswKey');
-      // if (this.findPsw === findPswKey) { //* 密钥对的上
-      setTimeout(() => { //* 美好的结果都值得等待
+      if (this.findPsw.findPswKey === adminPsw.secretKey) { //* 密钥对的上
+        setTimeout(() => { //* 美好的结果都值得等待
+          this.loading = false; //* 关闭 loading
+          this.response = true; //* 显示包含密码与密钥的盒子
+          this.showForgot = false; //* 隐藏[忘记密码]按钮
+          this.findPsw.findedPsw = AES.decrypt(adminPsw.psw); //* 显示密码
+          this.secretKey = $base.randomWord(false, 50); //* 更新密钥
+          adminPsw.secretKey = this.secretKey;
+          localStorage.setItem('adminPsw', JSON.stringify(adminPsw)); //* 更新缓存
+          console.log(`🚀 ~ file: index.vue ~ line 183 ~ setTimeout ~ this.secretKey`, this.secretKey)
+          this.footerBtn = false; //* 切换按钮
+        }, 1000);
+      } else {
+        this.$message.error('密钥不存在');
         this.loading = false;
-        this.response = true;
-        this.findPsw.findedPsw = AES.decrypt(adminPsw.psw); //* 显示密码
-        this.secretKey = 'miyao';
-        this.footerBtn = false;
-      }, 1000);
-      // }
+      }
     },
     closeFindPswForm() { //* 关闭找回密码 dialog
       this.loading = false;
-      this.response = false;
-      this.findPsw.findedPsw = '';
-      this.footerBtn = true;
+      this.response = false; //* 隐藏密码与密钥框
+      this.findPsw.findedPsw = ''; //* 清空找回的密码
+      this.footerBtn = true; //* 切换按钮
       this.dialogFindPswFormVisible = false;
       console.info('closeFindPswForm')
     },
@@ -197,11 +212,8 @@ export default {
       });
     },
     saveSecretKey() { //* 导出密钥
-      console.info(this.$moment().format('MMMM Do YYYY, h:mm:ss a'));
-      debugger
-      return;
       const blob = {
-        content: ['密钥: <' + this.secretKey + '>; 保存时间: ' + 'shijian'],
+        content: ['密钥: <' + this.secretKey + '>; 保存时间: ' + this.$moment().format('MMMM Do YYYY, h:mm:ss a')],
         type: 'text/plain;chartset=utf-8'
       };
       $base.saveFile(blob, 'PASSWORDMANAGEMENT');
@@ -250,5 +262,9 @@ export default {
 
 .el-row .el-col {
   margin: .03rem 0;
+}
+
+.dialog {
+  min-width: 5.4rem;
 }
 </style>
