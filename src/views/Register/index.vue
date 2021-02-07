@@ -60,7 +60,7 @@
   </el-row>
 
   <el-dialog title="密码注册成功" :visible.sync="dialogSecretFormVisible" @close="dialogSecretFormCLose" width="80%" :destroy-on-close=true>
-    <span>现在, 请保存您的密钥, 这是找回密码的唯一凭证.</span>
+    <span>现在, 请保存您的密钥, 这是找回密码的唯一凭证(密钥丢失数据无法找回).</span>
     <input type="text" class="fileExportInput" :value="setData.secretKey" ref="secretKey">
     <el-tooltip class="item" effect="dark" content="点击密钥复制" placement="top-start">
       <el-link type="info" @click="copySecretKey">{{setData.secretKey}}</el-link>
@@ -151,6 +151,8 @@ export default {
               break;
           }
         }
+        //* 自定义方法记得加上 ↓ 这玩意, 否则提交无法执行
+        callback();
       }
 
       /* if (value.trim().length < 6) {
@@ -176,7 +178,7 @@ export default {
     return {
       showPsw: '',
       header: '首次使用需要设置管理密码',
-      headerSupplement: '用于验证进入及加密数据(忘记无法找回)',
+      headerSupplement: '用于验证进入及加密数据',
       eyeShow: false, //* 密码可视小眼睛 //* 确认密码输入框是否可编辑(是否需要确认密码)
       dialogSecretFormVisible: false, //* 密钥 dialog
       inputType: 'password', //* 输入框类型
@@ -229,8 +231,10 @@ export default {
       this.showPsw = this.setData.password
     }, */
     submitForm(formName) { //* 表单提交
+    debugger  
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          debugger
           const encryptPsw = AES.encrypt(this.setData.password); //* 加密密码
           this.setData.secretKey = $base.randomWord(false, 50); //* 密钥
           localStorage.setItem('adminPsw', JSON.stringify({ //* 存储
@@ -253,6 +257,7 @@ export default {
       this.eyeShow = !this.eyeShow; //* 眼睛 icon 切换
       this.inputType = 'password';
       this.$refs[formName].resetFields();
+      this.passwordPercent = 0;
     },
     eyeChange() {
       this.eyeShow = !this.eyeShow; //* 眼睛 icon 切换
@@ -320,7 +325,7 @@ export default {
       }
     },
     passwordPercentFormat(percentage) { //* 密码强度
-      console.log(`🚀 ~ file: index.vue ~ line 323 ~ passwordPercentFormat ~ percentage`, percentage)
+      // console.log(`🚀 ~ file: index.vue ~ line 323 ~ passwordPercentFormat ~ percentage`, percentage)
       /**
        * 很弱
        * 弱

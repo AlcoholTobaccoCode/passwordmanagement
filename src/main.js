@@ -9,7 +9,6 @@ import '@/assets/iconfont/iconfont.css' //* 自定义 iconfont 仓
 import db from '@/utils/indexedDB' //* indexedDB 依赖
 import Moment from 'moment' //* 日期格式化依赖
 
-
 Vue.config.productionTip = false
 
 Vue.prototype.db = db; //* 全局挂载 indexedDB

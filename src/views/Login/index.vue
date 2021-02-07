@@ -108,6 +108,7 @@ export default {
   },
   methods: {
     enter() { //* 表单提交
+    debugger
       if (this.setData.password.trim().length <= 0) {
         return;
       }
@@ -116,7 +117,7 @@ export default {
         if (adminPsw.psw) {
           psw = adminPsw.psw;
         } else {
-          $this.$message.error('未检测到密码, 跳转注册页面');
+          $this.$message.error('未检测到用户, 跳转注册页面');
           setTimeout(() => {
             $this.$router.push({
               name: 'register'
@@ -125,7 +126,7 @@ export default {
           return;
         }
       } else {
-        this.$message.error('未检测到密码, 跳转注册页面');
+        this.$message.error('未检测到用户, 跳转注册页面');
         setTimeout(() => {
           this.$router.push({
             name: 'register'
@@ -138,6 +139,7 @@ export default {
         //* 改变登录状态
         if (!adminPsw.status) {
           adminPsw.status = true;
+          adminPsw['loginTime'] = new Date();
         }
         localStorage.setItem('adminPsw', JSON.stringify(adminPsw))
         this.$message({
